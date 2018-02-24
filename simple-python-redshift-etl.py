@@ -3,6 +3,9 @@ import psycopg2
 
 """
 A very simple ETL pipeline: reading a local file and pushing to Redshift
+To install psycopg2, run the following command (after installing Anaconda
+
+    conda install -c anaconda psycopg2=2.6.2
 """
 
 def extract(filename):
@@ -56,7 +59,7 @@ def load(dbname, host, user, password, port, records):
     cur.close()
     conn.close()
 
-# MAIN
+# MAIN - please update the following according to your Redshift setting
 dbname='prod'
 user='admin'
 host='13.124.7.179'
@@ -64,6 +67,8 @@ password='Kookmin1'
 port='5439'
 
 if __name__== "__main__"
+    tsv_filename = sys.argv[1]
+
     raw_rows = extract(tsv_filename)
     records = transform(raw_rows)
-    load(dbname, user, host, password, port, records)
+    load(dbname, host, user, password, port, records)
