@@ -1,36 +1,67 @@
 """
-This is based on https://github.com/hgrif/airflow-tutorial
+This is based on the following two articles:
+ - https://airflow.apache.org/tutorial.html
 """
-import datetime as dt
-
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator
-
-
-def print_world():
-    print('world')
-
+from datetime import datetime, timedelta
 
 default_args = {
-    'owner': 'me',
-    'start_date': dt.datetime(2017, 6, 1),
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': datetime(2018, 2, 23),
+    'email': ['airflow@example.com'],
+    'email_on_failure': False,
+    'email_on_retry': False,
     'retries': 1,
-    'retry_delay': dt.timedelta(minutes=5),
+    'retry_delay': timedelta(minutes=5),
 }
 
+def print_world():
+    print('Hello world')
 
-with DAG('airflow_tutorial_v01',
-         default_args=default_args,
-         schedule_interval='0 * * * *',
-         ) as dag:
+dag = DAG(
+    'hello_world_dataeng',
+    default_args=default_args,
+    schedule_interval='0 12 * * *'
+)
 
-    print_hello = BashOperator(task_id='print_hello',
-                               bash_command='echo "hello"')
-    sleep = BashOperator(task_id='sleep',
-                         bash_command='sleep 5')
-    print_world = PythonOperator(task_id='print_world',
-                                 python_callable=print_world)
+# t1, t2, t3 and t4 are examples of tasks created by instantiating operators
+t1 = BashOperator(
+    task_id='print_date',
+    bash_command='date',
+    dag=dag
+)
+
+t2 = BashOperator(
+    task_id='sleep',
+    bash_command='sleep 5',
+    retries=3,
+    dag=dag
+)
+
+templated_command = """
+    {% for i in range(5) %}
+        echo "{{ ds }}"
+        echo "{{ macros.ds_add(ds, 7)}}"
+        echo "{{ params.my_param }}"
+    {% endfor %}
+"""
+
+t3 = BashOperator(
+    task_id='templated',
+    bash_command=templated_command,
+    params={'my_param': 'Parameter I passed in'},
+    dag=dag
+)
+t4 = PythonOperator(
+    task_id='print_world',
+    python_callable=print_world,
+    dag=dag
+)
 
 
-print_hello >> sleep >> print_world
+t2.set_upstream(t1)
+t3.set_upstream(t1)
+t4.set_upstream(t3)
