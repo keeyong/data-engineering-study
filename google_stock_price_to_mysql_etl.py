@@ -56,7 +56,7 @@ t1 = SimpleHttpOperator(
     task_id='get_google_stock',
     http_conn_id='google_finance',
     method='GET',
-    endpoint='finance/historical?q=goog&startdate=01-Jan-2010&output=csv',
+    endpoint='finance/historical?q=goog&startdate=27-Mar-2014&output=csv',
     xcom_push=True,
     dag=dag
 )
@@ -78,19 +78,23 @@ def pull_csv_and_push_to_mysql(**kwargs):
 
     conn = pymysql.connect(host='localhost',
                        user='root', password='keeyonghan',
-                       db='test', charset='utf8')
+                       db='test', charset='utf8', autocommit=True)
     curs = conn.cursor()
     for row in reader:
-        sql = "insert into test.google_stock_price value ('{date}', {open}, {high}, {low}, {close}, {volume});".format(
-            date=datetime.strptime(row[0], "%d-%b-%y").date(),
-            open=row[1],
-            high=row[2],
-            low=row[3],
-            close=row[4],
-            volume=row[5] if row[5] != '-' else None
-        )
-        print(sql)
-        curs.execute(sql)
+        try:
+            sql = "insert into test.google_stock_price value ('{date}', {open}, {high}, {low}, {close}, {volume});".format(
+                date=datetime.strptime(row[0], "%d-%b-%y").date(),
+                open=row[1],
+                high=row[2],
+                low=row[3],
+                close=row[4],
+                volume=row[5] if row[5] != '-' else "NULL"
+            )
+            print(sql)
+            curs.execute(sql)
+        except:
+            print(row)
+            pass
     conn.close()
     '''
     - For debugging purpose, you can write to a file
