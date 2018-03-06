@@ -66,7 +66,7 @@ host='13.124.7.179'
 password='Kookmin1'
 port='5439'
 
-if __name__== "__main__"
+if __name__== "__main__":
     tsv_filename = sys.argv[1]
 
     raw_rows = extract(tsv_filename)
