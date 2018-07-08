@@ -114,9 +114,11 @@ streamingETLQuery = cloudTrailEvents \
   .option("checkpointLocation", checkpointPath) \
   .start()
   
+# Step 4: Query up-to-the-minute data from Parquet Table
+# While the streamingETLQuery is continuously converting the data to Parquet, you can already start running ad-hoc queries on the Parquet table. Your queries will always pick up the latest written files while ensuring data consistency.
+
 parquetData = sql("select * from parquet.`{}`".format(parquetOutputPath))
 display(parquetData)
 
-# Step 4: Query up-to-the-minute data from Parquet Table
-# While the streamingETLQuery is continuously converting the data to Parquet, you can already start running ad-hoc queries on the Parquet table. Your queries will always pick up the latest written files while ensuring data consistency.
-sqlsql(("select * from parquet.`{}`""select * from parquet.`{}`"..formatformat((parquetOutputPathparquetOutputPath))))..countcount(())
+# If you count the number of rows in the table, you should find the value increasing over time. Run the following every few minutes.
+sql("select * from parquet.`{}`".format(parquetOutputPath)).count()
