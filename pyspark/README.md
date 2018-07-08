@@ -33,7 +33,7 @@ output.writeStream \          # write out your data
   .format("parquet") \
   .start("path/to/write")
 ```
-* Spark SQL supports complex types natively
+* Spark SQL supports complex types natively from https://databricks.com/blog/2017/02/23/working-complex-data-formats-structured-streaming-apache-spark-2-1.html
   * Selecting from nested columns: events.select("a.b")
   * Flattening structs: events.select("a.*")
   * Nesting columns
@@ -43,7 +43,18 @@ output.writeStream \          # write out your data
   * Collecting multiple rows into an array
   * Selecting one field from each item in an array
   * to_json and from_json
-   
+  * Parse a set of fields from a column containing JSON
+  * Parse a well-formed string column
+  
+* Real-time Streaming ETL with Structured Streaming in Apache Spark
+  * it is easy to take an existing batch ETL job and subsequently productize it as a real-time streaming pipeline using Structured Streaming
+  * ETL needs to do the followings:
+    * Filter, transform, and clean up data
+    * Convert to a more efficient storage format
+      * Text, JSON and CSV data are easy to generate and are human readable, but are very expensive to query. Converting it to more efficient formats like Parquet, Avro, or ORC can reduce file size and improve processing speed.
+    * Partition data by important columns
+      * By partitioning the data based on the value of one or more columns, common queries can be answered more efficiently by reading only the relevant fraction of the total dataset.
+  * Fortunately, Structured Streaming makes it easy to convert these periodic batch jobs to a real-time data pipeline. Streaming jobs are expressed using the same APIs as batch data. Additionally, the engine provides the same fault-tolerance and data consistency guarantees as periodic batch jobs, while providing much lower end-to-end latency.
 
 ## Example Scripts Overview
 
