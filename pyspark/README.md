@@ -36,6 +36,13 @@ output.writeStream \          # write out your data
 * Spark SQL supports complex types natively
   * Selecting from nested columns: events.select("a.b")
   * Flattening structs: events.select("a.*")
+  * Nesting columns
+  * Nesting all columns
+  * Selecting a single array or map element
+  * Creating a row for each array or map element
+  * Collecting multiple rows into an array
+  * Selecting one field from each item in an array
+  * to_json and from_json
    
 
 ## Example Scripts Overview
