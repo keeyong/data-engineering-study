@@ -10,6 +10,7 @@
 * Supports streaming aggregations, event-time windows, windowed grouped aggregation, stream-to-batch joins
 * Features streaming deduplication, multiple output modes and APIs for managing/monitoring streaming queries
 * Built-in sources: Kafka, File source (json, csv, text, parquet)
+* Structured Streaming supports a ProcessingTime trigger which will fire every user-provided interval, for example every minute (https://databricks.com/blog/2017/05/22/running-streaming-jobs-day-10x-cost-savings.html)
 
 ### Continuous Application
 
@@ -48,6 +49,25 @@ output.writeStream \          # write out your data
   
 * Real-time Streaming ETL with Structured Streaming in Apache Spark
   * it is easy to take an existing batch ETL job and subsequently productize it as a real-time streaming pipeline using Structured Streaming
+```
+  // Read data continuously from an S3 location
+val inputDF = spark.readStream.json("s3://logs")
+ 
+// Do operations using the standard DataFrame API and write to MySQL
+inputDF.groupBy($"action", window($"time", "1 hour")).count()
+       .writeStream.format("jdbc")
+       .start("jdbc:mysql//…")
+```
+This code is nearly identical to the batch version below—only the “read” and “write” changed:
+```
+// Read data once from an S3 location
+val inputDF = spark.read.json("s3://logs")
+ 
+// Do operations using the standard DataFrame API and write to MySQL
+inputDF.groupBy($"action", window($"time", "1 hour")).count()
+       .writeStream.format("jdbc")
+       .save("jdbc:mysql//…")
+```       
   * ETL needs to do the followings:
     * Filter, transform, and clean up data
     * Convert to a more efficient storage format
