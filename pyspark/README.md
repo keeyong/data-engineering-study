@@ -76,6 +76,24 @@ inputDF.groupBy($"action", window($"time", "1 hour")).count()
       * By partitioning the data based on the value of one or more columns, common queries can be answered more efficiently by reading only the relevant fraction of the total dataset.
   * Fortunately, Structured Streaming makes it easy to convert these periodic batch jobs to a real-time data pipeline. Streaming jobs are expressed using the same APIs as batch data. Additionally, the engine provides the same fault-tolerance and data consistency guarantees as periodic batch jobs, while providing much lower end-to-end latency.
 
+### Unsupported Operations in Structured Streaming
+
+There are a few DataFrame/Dataset operations that are not supported with streaming DataFrames/Datasets. Some of them are as follows.
+
+* Multiple streaming aggregations (i.e. a chain of aggregations on a streaming DF) are not yet supported on streaming Datasets.
+* Limit and take first N rows are not supported on streaming Datasets.
+* Distinct operations on streaming Datasets are not supported.
+* Sorting operations are supported on streaming Datasets only after an aggregation and in Complete Output Mode.
+* Few types of outer joins on streaming Datasets are not supported. See the support matrix in the Join Operations section for more details.
+
+In addition, there are some Dataset methods that will not work on streaming Datasets. They are actions that will immediately run queries and return results, which does not make sense on a streaming Dataset. Rather, those functionalities can be done by explicitly starting a streaming query (see the next section regarding that).
+
+* count() - Cannot return a single count from a streaming Dataset. Instead, use ds.groupBy().count() which returns a streaming Dataset containing a running count.
+* foreach() - Instead use ds.writeStream.foreach(...) (see next section).
+* show() - Instead use the console sink (see next section).
+
+If you try any of these operations, you will see an AnalysisException like “operation XYZ is not supported with streaming DataFrames/Datasets”. While some of them may be supported in future releases of Spark, there are others which are fundamentally hard to implement on streaming data efficiently. For example, sorting on the input stream is not supported, as it requires keeping track of all the data received in the stream. This is therefore fundamentally hard to execute efficiently.
+
 ## Example Scripts Overview
 
 ### Running structured_network_wordcount.py
